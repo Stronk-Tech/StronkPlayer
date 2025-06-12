@@ -9,7 +9,7 @@ import React, { useEffect } from 'react';
 const MistPlayer = ({ baseUri, streamName, developmentMode = false }) => {
   // Embed as an iframe on localhost/HTTP
   const useIFrame = window.location.protocol === 'http:';
-  const htmlUri = baseUri + encodeURIComponent(streamName) + ".html";
+  const htmlUri = baseUri + encodeURIComponent(streamName) + ".html?dev=1";
   const playerUri = baseUri + "player.js";
 
   useEffect(() => {
@@ -44,7 +44,7 @@ const MistPlayer = ({ baseUri, streamName, developmentMode = false }) => {
         controls: true,
         fillSpace: true,
         muted: true,
-        skin: developmentMode ? 'dev' : undefined,
+        skin: developmentMode ? 'dev' : 'default',
       });
     }
 
@@ -68,6 +68,7 @@ const MistPlayer = ({ baseUri, streamName, developmentMode = false }) => {
           maxWidth: '100%',
           height: '100%',
           border: 'none',
+          minHeight: '300px',
         }}
         src={htmlUri}
         title={`MistPlayer - ${streamName}`}
