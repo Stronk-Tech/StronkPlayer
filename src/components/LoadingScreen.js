@@ -277,7 +277,7 @@ const LoadingScreen = ({ message = "Waiting for source..." }) => {
           )
         `,
         backgroundSize: "400% 400%",
-        animation: "gradientShift 8s ease-in-out infinite",
+        animation: "gradientShift 16s ease-in-out infinite",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
