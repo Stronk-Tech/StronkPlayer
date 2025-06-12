@@ -1,6 +1,6 @@
 # MistPlayer React
 
-A React component library for MistServer streaming with support for both MistPlayer and Canvas WebRTC players. Automatically contacts the load balancer to find the best streaming host.
+A React component library for MistServer streaming with support for both MistPlayer and Canvas WebRTC players. The `Player` component automatically contacts the load balancer to find the best streaming host, while the raw components accept URIs directly.
 
 ## Installation
 
@@ -20,7 +20,7 @@ import { Player, MistPlayer, CanvasPlayer } from '@stronk-tech/mistplayer-react'
 
 ### Player Component (Recommended)
 
-The `Player` component provides a clean interface that renders either MistPlayer or CanvasPlayer based on the `playerType` prop:
+The `Player` component provides a clean interface that handles load balancing and renders either MistPlayer or CanvasPlayer based on the `playerType` prop:
 
 ```jsx
 import React from 'react';
@@ -45,18 +45,21 @@ You can specify which player to use and enable development mode:
 />
 ```
 
-### MistPlayer Component
+### Raw MistPlayer Component
 
-Use MistPlayer directly for the default MistServer player experience:
+Use MistPlayer directly when you want to provide your own URIs (bypassing load balancer):
 
 ```jsx
 import React from 'react';
 import { MistPlayer } from '@stronk-tech/mistplayer-react';
 
 function App() {
+  const baseUri = "https://your-mist-server.com/view/";
+  
   return (
     <div style={{ width: '100%', height: '500px' }}>
       <MistPlayer 
+        baseUri={baseUri}
         streamName="your-stream-name" 
         developmentMode={true} // optional: uses 'dev' skin
       />
@@ -65,18 +68,20 @@ function App() {
 }
 ```
 
-### CanvasPlayer Component
+### Raw CanvasPlayer Component
 
-Use CanvasPlayer for WebRTC streaming with HTML5 video element:
+Use CanvasPlayer directly when you want to provide your own WebRTC URI:
 
 ```jsx
 import React from 'react';
 import { CanvasPlayer } from '@stronk-tech/mistplayer-react';
 
 function App() {
+  const webrtcUri = "wss://your-mist-server.com/view/webrtc/your-stream-name";
+  
   return (
     <div style={{ width: '100%', height: '500px' }}>
-      <CanvasPlayer streamName="your-stream-name" />
+      <CanvasPlayer webrtcUri={webrtcUri} />
     </div>
   );
 }
@@ -114,7 +119,7 @@ function CustomPlayerWithControls() {
 
 ## Component Props
 
-### Player
+### Player (with Load Balancing)
 
 | Prop | Type | Required | Description |
 |------|------|----------|-------------|
@@ -122,24 +127,34 @@ function CustomPlayerWithControls() {
 | `playerType` | 'mist' \| 'canvas' | No | Player type to use (defaults to 'mist') |
 | `developmentMode` | boolean | No | Whether to use development mode (affects MistPlayer skin, defaults to false) |
 
-### MistPlayer
+### MistPlayer (Raw Component)
 
 | Prop | Type | Required | Description |
 |------|------|----------|-------------|
+| `baseUri` | string | Yes | Base URI for MistServer (e.g., "https://server.com/view/") |
 | `streamName` | string | Yes | Name of the stream to display |
 | `developmentMode` | boolean | No | Whether to use development mode ('dev' skin, defaults to false) |
 
-### CanvasPlayer
+### CanvasPlayer (Raw Component)
 
 | Prop | Type | Required | Description |
 |------|------|----------|-------------|
-| `streamName` | string | Yes | Name of the stream to display |
+| `webrtcUri` | string | Yes | WebSocket URI for WebRTC signaling (e.g., "wss://server.com/view/webrtc/streamName") |
 
 ## How It Works
 
-This package automatically contacts the load balancer to find the best streaming host for your stream:
+### Player Component (Load Balanced)
+The `Player` component automatically contacts the load balancer to find the best streaming host for your stream:
 
 - **MistPlayer**: Loads from `https://best-host/view/player.js` and plays `https://best-host/view/streamName.html`
 - **CanvasPlayer**: Connects to `wss://best-host/view/webrtc/streamName` for WebRTC streaming
 
-The components show loading states while contacting the load balancer and error states if no suitable host is found.
+The component shows loading states while contacting the load balancer and error states if no suitable host is found.
+
+### Raw Components (Direct URIs)
+The raw `MistPlayer` and `CanvasPlayer` components accept URIs directly, giving you full control over which servers to use. This is useful when:
+
+- You want to implement your own load balancing logic
+- You're connecting to a specific known server
+- You're building a custom player interface
+- You need to bypass the default load balancer
