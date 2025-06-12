@@ -1,9 +1,26 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Player } from './library';
 
 function App() {
-  const [streamName, setStreamName] = useState('your-stream-name');
+  // Get initial stream name from URL params or use default
+  const getInitialStreamName = () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get('stream') || 'your-stream-name';
+  };
+
+  const [streamName, setStreamName] = useState(getInitialStreamName());
   const [playerType, setPlayerType] = useState('mist');
+
+  // Update URL when stream name changes
+  useEffect(() => {
+    const url = new URL(window.location);
+    if (streamName && streamName !== 'your-stream-name') {
+      url.searchParams.set('stream', streamName);
+    } else {
+      url.searchParams.delete('stream');
+    }
+    window.history.replaceState({}, '', url);
+  }, [streamName]);
 
   return (
     <div style={{ fontFamily: 'Arial, sans-serif', padding: '20px' }}>
@@ -20,6 +37,9 @@ function App() {
             style={{ padding: '10px', margin: '10px', borderRadius: '5px', border: '1px solid #ccc' }}
           />
           <p>Uses the load balancer to find the best streaming server automatically!</p>
+          <p style={{ fontSize: '12px', color: '#666' }}>
+            💡 Tip: Use URL parameter ?stream=your-stream-name to set initial stream
+          </p>
         </div>
       </header>
 

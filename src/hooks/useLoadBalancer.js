@@ -7,19 +7,24 @@ const baseUri = "https://loadbalancer.stronk.rocks";
 
 const useLoadBalancer = (props) => {
   const getNode = async () => {
-    let nodeResp = await fetch(
-      baseUri + "/" + encodeURIComponent(props.streamName),
-      {
-        method: "GET",
+    try {
+      let nodeResp = await fetch(
+        baseUri + "/" + encodeURIComponent(props.streamName),
+        {
+          method: "GET",
+        }
+      );
+      if (nodeResp.ok) {
+        let nodeData = await nodeResp.text();
+        if (nodeData == "FULL") {
+          return { host: "", status: "no_stream" };
+        }
+        return { host: nodeData, status: "ready" };
       }
-    );
-    if (nodeResp.ok) {
-      let nodeData = await nodeResp.text();
-      if (nodeData == "FULL") {
-        return "";
-      }
-      return nodeData;
+    } catch (error) {
+      return { host: "", status: "error" };
     }
+    return { host: "", status: "error" };
   };
 
   const getSource = async () => {

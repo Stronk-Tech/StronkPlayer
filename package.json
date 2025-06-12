@@ -1,6 +1,6 @@
 {
   "name": "@stronk-tech/mistplayer-react",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "React components for MistServer streaming with automatic load balancing",
   "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",

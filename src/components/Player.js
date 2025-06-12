@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import MistPlayer from "./MistPlayer";
 import CanvasPlayer from "./CanvasPlayer";
+import LoadingScreen from "./LoadingScreen";
 import useLoadBalancer from "../hooks/useLoadBalancer";
 
 const Player = ({ streamName, playerType = "mist", developmentMode = false }) => {
@@ -9,15 +10,17 @@ const Player = ({ streamName, playerType = "mist", developmentMode = false }) =>
     streamName,
   });
   const [bestHost, setHost] = useState("");
+  const [status, setStatus] = useState("loading");
   const intervalRef = useRef(null);
 
   useEffect(() => {
     const getHost = async () => {
-      const newHost = await getNode();
+      const result = await getNode();
       
-      if (newHost === "") {
+      if (result.host === "") {
+        setStatus(result.status);
         // Only set interval if we don't already have one running
-        if (!intervalRef.current) {
+        if (!intervalRef.current && result.status !== "no_stream") {
           console.log("Finding new edge node in 5 seconds...");
           intervalRef.current = setInterval(getHost, 5000);
         }
@@ -30,9 +33,10 @@ const Player = ({ streamName, playerType = "mist", developmentMode = false }) =>
         intervalRef.current = null;
       }
       
-      if (newHost !== bestHost) {
-        console.log("Found edge node " + newHost);
-        setHost(newHost);
+      if (result.host !== bestHost) {
+        console.log("Found edge node " + result.host);
+        setHost(result.host);
+        setStatus("ready");
       }
     };
     
@@ -49,11 +53,14 @@ const Player = ({ streamName, playerType = "mist", developmentMode = false }) =>
 
   // Show loading state while contacting load balancer
   if (bestHost === "") {
-    return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%' }}>
-        <p>Waiting for source...</p>
-      </div>
-    );
+    let message = "Finding best streaming server...";
+    if (status === "no_stream") {
+      message = "Stream is currently offline";
+    } else if (status === "error") {
+      message = "Connection error, retrying...";
+    }
+    
+    return <LoadingScreen message={message} />;
   }
 
   // Construct URIs for the child components
