@@ -1,5 +1,4 @@
 import React, { useRef, useEffect, useState } from "react";
-import LoadingScreen from "./LoadingScreen";
 
 const WHEPPlayer = ({
   whepUrl,
@@ -11,12 +10,9 @@ const WHEPPlayer = ({
   const videoRef = useRef(null);
   const pcRef = useRef(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [isConnected, setIsConnected] = useState(false);
 
   const handleError = (err) => {
     console.error("WHEP Player error:", err);
-    setError(err.message || "Connection failed");
     setIsLoading(false);
     if (onError) onError(err);
   };
@@ -26,14 +22,12 @@ const WHEPPlayer = ({
       pcRef.current.close();
       pcRef.current = null;
     }
-    setIsConnected(false);
     setIsLoading(false);
   };
 
   const startWHEPPlayback = async (url) => {
     try {
       setIsLoading(true);
-      setError(null);
 
       // Create RTCPeerConnection
       const pc = new RTCPeerConnection({
@@ -49,7 +43,6 @@ const WHEPPlayer = ({
         if (videoRef.current && event.streams[0]) {
           videoRef.current.srcObject = event.streams[0];
           setIsLoading(false);
-          setIsConnected(true);
           if (onConnected) onConnected();
         }
       };
@@ -103,7 +96,7 @@ const WHEPPlayer = ({
 
   useEffect(() => {
     if (!whepUrl) {
-      setError("No WHEP URL provided");
+      console.error("No WHEP URL provided");
       return;
     }
 
@@ -118,40 +111,8 @@ const WHEPPlayer = ({
     };
   }, [whepUrl]);
 
-  if (error) {
-    return (
-      <div style={{
-        width: "100%",
-        height: "100%",
-        minHeight: "300px",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        background: "#f5f5f5",
-        borderRadius: "8px",
-        color: "#d32f2f",
-        fontSize: "16px",
-        textAlign: "center",
-        padding: "20px"
-      }}>
-        <div>
-          <div style={{ marginBottom: "10px", fontSize: "18px", fontWeight: "bold" }}>
-            Connection Error
-          </div>
-          <div>{error}</div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div style={{ position: "relative", width: "100%", height: "100%" }}>
-      {isLoading && (
-        <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, zIndex: 10 }}>
-          <LoadingScreen message="Connecting to stream..." />
-        </div>
-      )}
-
       <video
         ref={videoRef}
         autoPlay={autoPlay}
@@ -166,22 +127,6 @@ const WHEPPlayer = ({
           transition: "opacity 0.3s ease"
         }}
       />
-
-      {isConnected && (
-        <div style={{
-          position: "absolute",
-          top: "10px",
-          right: "10px",
-          background: "rgba(76, 175, 80, 0.9)",
-          color: "white",
-          padding: "4px 8px",
-          borderRadius: "4px",
-          fontSize: "12px",
-          fontWeight: "bold"
-        }}>
-          LIVE
-        </div>
-      )}
     </div>
   );
 };
