@@ -79,7 +79,7 @@ const useSignaling = (props) => {
         webSocket.current = null;
       }
     };
-  }, [webSocket]);
+  }, [props.uri, props.onEvent]);
 
   // Sends a given JSON cmd over the signaling WebSocket
   function send(cmd) {

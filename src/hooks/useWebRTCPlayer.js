@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from "react";
-import useSignaling from "./WebRTCSignaling";
+import { useState, useEffect, useRef, useCallback } from "react";
+import useSignaling from "./useWebRTCSignaling";
 
 /*
   WebRTC Canvas Player
@@ -14,11 +14,6 @@ const useWebRTCPlayer = (props) => {
   const [isReady, setReady] = useState(false);
   // Reference to the WebRTC connection
   const peerConnRef = useRef(null);
-  // Open websocket for signaling
-  const [sendVideoBitrate, sendOfferSDP, sendStop, sendSeek] = useSignaling({
-    uri: props.uri,
-    onEvent: onEvent,
-  });
 
   // Callback functions to interact with the WebRTC signalling hook
 
@@ -45,7 +40,8 @@ const useWebRTCPlayer = (props) => {
     console.error(ev.message);
   }
 
-  function onEvent(ev) {
+  // Memoize the onEvent callback to prevent infinite loops
+  const onEvent = useCallback((ev) => {
     switch (ev.type) {
       case "on_connected": {
         onSignalingConnected();
@@ -80,7 +76,13 @@ const useWebRTCPlayer = (props) => {
         break;
       }
     }
-  }
+  }, []);
+
+  // Open websocket for signaling (moved after onEvent definition)
+  const [sendVideoBitrate, sendOfferSDP, sendStop, sendSeek] = useSignaling({
+    uri: props.uri,
+    onEvent: onEvent,
+  });
 
   // Connect to WebRTC after signalling is connected
   useEffect(() => {
@@ -117,7 +119,7 @@ const useWebRTCPlayer = (props) => {
       offerToReceiveVideo: true,
     };
     peerConnRef.current.createOffer(opt).then(onCreateOffer, onOfferError);
-  }, [isReady]);
+  }, [isReady, sendOfferSDP, sendVideoBitrate, props.streamBitrate, props.canvasRef]);
 };
 
 export default useWebRTCPlayer;

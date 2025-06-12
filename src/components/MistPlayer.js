@@ -12,7 +12,6 @@ const MistPlayer = ({ baseUri, streamName, developmentMode = false }) => {
   const htmlUri = baseUri + encodeURIComponent(streamName) + ".html";
   const playerUri = baseUri + "player.js";
 
-
   useEffect(() => {
     if (useIFrame || !playerUri) {
       return;
@@ -20,7 +19,7 @@ const MistPlayer = ({ baseUri, streamName, developmentMode = false }) => {
 
     function playStream() {
       if (!window.mistplayers) return;
-      
+
       // Try to start it on the non-transcoded track and using WebRTC
       window.mistPlay?.(streamName, {
         target: document.getElementById('mistplayer'),
@@ -77,23 +76,20 @@ const MistPlayer = ({ baseUri, streamName, developmentMode = false }) => {
     return iframeElement;
   }
 
-  const divElement = (
-    <div
-      id="mistplayer"
-      style={{
-        width: '100%',
-        maxWidth: '100%',
-        height: '100%',
-      }}
-    >
-      <noscript>
-        <a href={htmlUri} target="_blank" rel="noopener noreferrer">
-          Click here to play this video
-        </a>
-      </noscript>
-    </div>
-  );
-  return divElement;
+  return <div
+    id="mistplayer"
+    style={{
+      width: '100%',
+      maxWidth: '100%',
+      height: '100%',
+    }}
+  >
+    <noscript>
+      <a href={htmlUri} target="_blank" rel="noopener noreferrer">
+        Click here to play this video
+      </a>
+    </noscript>
+  </div>;
 };
 
 export default MistPlayer;
