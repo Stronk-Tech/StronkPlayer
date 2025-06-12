@@ -10,8 +10,8 @@ const Player = ({
   playerType = "mist", // "mist", "canvas", "whep"
   developmentMode = false
 }) => {
-  // Get edge node to play from
-  const [getNode] = useLoadBalancer({
+  // Get edge node to play from and check stream status
+  const [getNode, getSource] = useLoadBalancer({
     streamName
   });
   const [bestHost, setHost] = useState("");
@@ -19,15 +19,29 @@ const Player = ({
   const intervalRef = useRef(null);
 
   useEffect(() => {
-    const getHost = async () => {
-      const result = await getNode();
+    const checkStream = async () => {
+      // First check if stream exists
+      const sourceResult = await getSource();
 
-      if (result.host === "") {
-        setStatus(result.status);
+      if (sourceResult === "") {
+        setStatus("no_stream");
         // Only set interval if we don't already have one running
-        if (!intervalRef.current && result.status !== "no_stream") {
-          console.log("Finding new edge node in 5 seconds...");
-          intervalRef.current = setInterval(getHost, 5000);
+        if (!intervalRef.current) {
+          console.log("Stream not found, retrying in 2 seconds...");
+          intervalRef.current = setInterval(checkStream, 2000);
+        }
+        return;
+      }
+
+      // Stream exists, now find best node to play from
+      const nodeResult = await getNode();
+
+      if (nodeResult.host === "") {
+        setStatus(nodeResult.status);
+        // Only set interval if we don't already have one running
+        if (!intervalRef.current && nodeResult.status !== "no_stream") {
+          console.log("Finding new edge node in 2 seconds...");
+          intervalRef.current = setInterval(checkStream, 2000);
         }
         return;
       }
@@ -38,14 +52,14 @@ const Player = ({
         intervalRef.current = null;
       }
 
-      if (result.host !== bestHost) {
-        console.log("Found edge node " + result.host);
-        setHost(result.host);
+      if (nodeResult.host !== bestHost) {
+        console.log("Found edge node " + nodeResult.host);
+        setHost(nodeResult.host);
         setStatus("ready");
       }
     };
 
-    getHost();
+    checkStream();
 
     // Cleanup interval on unmount or streamName change
     return () => {
@@ -54,7 +68,7 @@ const Player = ({
         intervalRef.current = null;
       }
     };
-  }, [streamName, getNode]);
+  }, [streamName, getNode, getSource]);
 
   // Show loading state while contacting load balancer
   if (bestHost === "") {
