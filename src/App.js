@@ -79,7 +79,7 @@ function App() {
               WHEP Player
             </label>
           </div>
-          <div style={{ border: '1px solid #ccc', borderRadius: '5px', overflow: 'hidden' }}>
+          <div style={{ border: '1px solid #ccc', borderRadius: '1px', overflow: 'hidden' }}>
             <Player streamName={streamName} playerType={playerType} />
           </div>
           {playerType === 'whep' && (

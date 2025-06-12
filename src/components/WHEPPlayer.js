@@ -122,7 +122,7 @@ const WHEPPlayer = ({
           width: "100%",
           height: "100%",
           backgroundColor: "#000",
-          borderRadius: "8px",
+          borderRadius: "1px",
           opacity: isLoading ? 0 : 1,
           transition: "opacity 0.3s ease"
         }}

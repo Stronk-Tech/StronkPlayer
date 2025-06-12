@@ -2,11 +2,20 @@ import React, { useEffect, useState } from "react";
 
 const DvdLogo = ({ parentRef, scale = 0.15 }) => {
   const [position, setPosition] = useState({ top: 0, left: 0 });
-  const [velocity, setVelocity] = useState({ x: 3, y: 3 });
+  const [velocity, setVelocity] = useState({ x: 1.5, y: 1.5 });
   const [dimensions, setDimensions] = useState({ width: 153, height: 69 });
 
   const getRandomColor = (currentColor) => {
-    const colors = ["#7aa2f7", "#bb9af7", "#9ece6a", "#e0af68", "#f7768e"];
+    const colors = [
+      "#7aa2f7", // Terminal Blue
+      "#bb9af7", // Terminal Magenta
+      "#9ece6a", // Strings/CSS classes (green)
+      "#73daca", // Terminal Green (cyan-green)
+      "#7dcfff", // Terminal Cyan
+      "#f7768e", // Keywords/Terminal Red (pink)
+      "#e0af68", // Terminal Yellow
+      "#2ac3de"  // Language functions (bright cyan)
+    ];
     let newColor;
     do {
       newColor = colors[Math.floor(Math.random() * colors.length)];
