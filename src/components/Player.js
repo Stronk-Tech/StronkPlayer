@@ -1,13 +1,18 @@
 import React, { useState, useEffect, useRef } from "react";
 import MistPlayer from "./MistPlayer";
 import CanvasPlayer from "./CanvasPlayer";
+import WHEPPlayer from "./WHEPPlayer";
 import LoadingScreen from "./LoadingScreen";
 import useLoadBalancer from "../hooks/useLoadBalancer";
 
-const Player = ({ streamName, playerType = "mist", developmentMode = false }) => {
+const Player = ({
+  streamName,
+  playerType = "mist", // "mist", "canvas", "whep"
+  developmentMode = false
+}) => {
   // Get edge node to play from
   const [getNode] = useLoadBalancer({
-    streamName,
+    streamName
   });
   const [bestHost, setHost] = useState("");
   const [status, setStatus] = useState("loading");
@@ -16,7 +21,7 @@ const Player = ({ streamName, playerType = "mist", developmentMode = false }) =>
   useEffect(() => {
     const getHost = async () => {
       const result = await getNode();
-      
+
       if (result.host === "") {
         setStatus(result.status);
         // Only set interval if we don't already have one running
@@ -26,22 +31,22 @@ const Player = ({ streamName, playerType = "mist", developmentMode = false }) =>
         }
         return;
       }
-      
+
       // We found a host - clear any retry interval
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
         intervalRef.current = null;
       }
-      
+
       if (result.host !== bestHost) {
         console.log("Found edge node " + result.host);
         setHost(result.host);
         setStatus("ready");
       }
     };
-    
+
     getHost();
-    
+
     // Cleanup interval on unmount or streamName change
     return () => {
       if (intervalRef.current) {
@@ -59,23 +64,28 @@ const Player = ({ streamName, playerType = "mist", developmentMode = false }) =>
     } else if (status === "error") {
       message = "Connection error, retrying...";
     }
-    
+
     return <LoadingScreen message={message} />;
   }
 
-  // Construct URIs for the child components
+  // Construct URIs for the child components using load balancer result
   const baseUri = `https://${bestHost}/view/`;
   const webrtcUri = `wss://${bestHost}/view/webrtc/${streamName}`;
+  const whepUri = `https://${bestHost}/view/webrtc/${streamName}`;
 
   if (playerType === "canvas") {
     return <CanvasPlayer webrtcUri={webrtcUri} streamName={streamName} />;
   }
-  
+
+  if (playerType === "whep") {
+    return <WHEPPlayer whepUrl={whepUri} />;
+  }
+
   return (
     <MistPlayer
       baseUri={baseUri}
-      streamName={streamName} 
-      developmentMode={developmentMode} 
+      streamName={streamName}
+      developmentMode={developmentMode}
     />
   );
 };

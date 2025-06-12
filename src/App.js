@@ -58,7 +58,7 @@ function App() {
               />
               MistPlayer
             </label>
-            <label>
+            <label style={{ marginRight: '20px' }}>
               <input
                 type="radio"
                 value="canvas"
@@ -68,10 +68,26 @@ function App() {
               />
               Canvas Player
             </label>
+            <label>
+              <input
+                type="radio"
+                value="whep"
+                checked={playerType === 'whep'}
+                onChange={(e) => setPlayerType(e.target.value)}
+                style={{ marginRight: '5px' }}
+              />
+              WHEP Player
+            </label>
           </div>
           <div style={{ border: '1px solid #ccc', borderRadius: '5px', overflow: 'hidden' }}>
             <Player streamName={streamName} playerType={playerType} />
           </div>
+          {playerType === 'whep' && (
+            <div style={{ marginTop: '10px', padding: '10px', backgroundColor: '#e3f2fd', borderRadius: '5px' }}>
+              <strong>WHEP Info:</strong> This uses the standardized WebRTC-HTTP Egress Protocol for playback. 
+              Much simpler than WebSocket signaling - just HTTP requests!
+            </div>
+          )}
         </div>
       </main>
     </div>
