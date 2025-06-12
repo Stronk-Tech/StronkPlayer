@@ -1,0 +1,129 @@
+import React, { useState } from 'react';
+import Player from './components/Player';
+import MistPlayer from './components/MistPlayer';
+import CanvasPlayer from './components/CanvasPlayer';
+
+function App() {
+  const [selectedExample, setSelectedExample] = useState('unified');
+  const [streamName, setStreamName] = useState('your-stream-name');
+  const [playerType, setPlayerType] = useState('mist');
+
+  return (
+    <div style={{ fontFamily: 'Arial, sans-serif', padding: '20px' }}>
+      <header style={{ textAlign: 'center', marginBottom: '30px' }}>
+        <h1>MistPlayer React Examples</h1>
+        <p>Choose an example to see different ways to use the raw player components:</p>
+
+        <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginBottom: '20px' }}>
+          <button
+            style={{
+              padding: '10px 20px',
+              backgroundColor: selectedExample === 'unified' ? '#007bff' : '#ccc',
+              color: selectedExample === 'unified' ? 'white' : 'black',
+              border: 'none',
+              borderRadius: '5px',
+              cursor: 'pointer'
+            }}
+            onClick={() => setSelectedExample('unified')}
+          >
+            Raw Player Component
+          </button>
+          <button
+            style={{
+              padding: '10px 20px',
+              backgroundColor: selectedExample === 'mistplayer' ? '#007bff' : '#ccc',
+              color: selectedExample === 'mistplayer' ? 'white' : 'black',
+              border: 'none',
+              borderRadius: '5px',
+              cursor: 'pointer'
+            }}
+            onClick={() => setSelectedExample('mistplayer')}
+          >
+            MistPlayer Only
+          </button>
+          <button
+            style={{
+              padding: '10px 20px',
+              backgroundColor: selectedExample === 'canvas' ? '#007bff' : '#ccc',
+              color: selectedExample === 'canvas' ? 'white' : 'black',
+              border: 'none',
+              borderRadius: '5px',
+              cursor: 'pointer'
+            }}
+            onClick={() => setSelectedExample('canvas')}
+          >
+            Canvas Player Only
+          </button>
+        </div>
+
+        <div style={{ backgroundColor: '#f5f5f5', padding: '15px', borderRadius: '5px', marginBottom: '20px' }}>
+          <h3>Stream Configuration</h3>
+          <input
+            type="text"
+            placeholder="Stream Name"
+            value={streamName}
+            onChange={(e) => setStreamName(e.target.value)}
+            style={{ padding: '10px', margin: '10px', borderRadius: '5px', border: '1px solid #ccc' }}
+          />
+          <p>Uses the load balancer to find the best streaming server automatically!</p>
+        </div>
+      </header>
+
+      <main style={{ maxWidth: '800px', margin: '0 auto' }}>
+        {selectedExample === 'unified' && (
+          <div>
+            <h2>Raw Player Component</h2>
+            <p>Clean player component without UI chrome - specify playerType prop:</p>
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ marginRight: '20px' }}>
+                <input
+                  type="radio"
+                  value="mist"
+                  checked={playerType === 'mist'}
+                  onChange={(e) => setPlayerType(e.target.value)}
+                  style={{ marginRight: '5px' }}
+                />
+                MistPlayer
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  value="canvas"
+                  checked={playerType === 'canvas'}
+                  onChange={(e) => setPlayerType(e.target.value)}
+                  style={{ marginRight: '5px' }}
+                />
+                Canvas Player
+              </label>
+            </div>
+            <div style={{ border: '1px solid #ccc', borderRadius: '5px', overflow: 'hidden' }}>
+              <Player streamName={streamName} playerType={playerType} />
+            </div>
+          </div>
+        )}
+
+        {selectedExample === 'mistplayer' && (
+          <div>
+            <h2>MistPlayer Component</h2>
+            <p>Direct MistServer player integration:</p>
+            <div style={{ border: '1px solid #ccc', borderRadius: '5px', overflow: 'hidden' }}>
+              <MistPlayer streamName={streamName} />
+            </div>
+          </div>
+        )}
+
+        {selectedExample === 'canvas' && (
+          <div>
+            <h2>Canvas Player Component</h2>
+            <p>WebRTC streaming with HTML5 video element:</p>
+            <div style={{ border: '1px solid #ccc', borderRadius: '5px', overflow: 'hidden' }}>
+              <CanvasPlayer streamName={streamName} />
+            </div>
+          </div>
+        )}
+      </main>
+    </div>
+  );
+}
+
+export default App; 
