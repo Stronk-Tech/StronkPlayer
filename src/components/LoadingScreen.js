@@ -71,6 +71,10 @@ const AnimatedBubble = ({ index }) => {
         opacity: opacity,
         transition: "opacity 1s ease-in-out",
         pointerEvents: "none",
+        userSelect: "none",
+        WebkitUserSelect: "none",
+        MozUserSelect: "none",
+        msUserSelect: "none",
       }}
     />
   );
@@ -153,6 +157,10 @@ const CenterLogo = ({ containerRef, scale = 0.2 }) => {
         justifyContent: "center",
         zIndex: 10,
         transition: "transform 0.3s ease-out",
+        userSelect: "none",
+        WebkitUserSelect: "none",
+        MozUserSelect: "none",
+        msUserSelect: "none",
       }}
     >
       {/* Pulsing circle background */}
@@ -166,6 +174,11 @@ const CenterLogo = ({ containerRef, scale = 0.2 }) => {
           animation: isHovered ? "logoPulse 1s ease-in-out infinite" : "logoPulse 3s ease-in-out infinite",
           transform: isHovered ? "scale(1.2)" : "scale(1)",
           transition: "transform 0.3s ease-out",
+          userSelect: "none",
+          WebkitUserSelect: "none",
+          MozUserSelect: "none",
+          msUserSelect: "none",
+          pointerEvents: "none",
         }}
       />
 
@@ -184,6 +197,12 @@ const CenterLogo = ({ containerRef, scale = 0.2 }) => {
           transform: isHovered ? "scale(1.1)" : "scale(1)",
           transition: "all 0.3s ease-out",
           cursor: "pointer",
+          userSelect: "none",
+          WebkitUserSelect: "none",
+          MozUserSelect: "none",
+          msUserSelect: "none",
+          WebkitUserDrag: "none",
+          WebkitTouchCallout: "none",
         }}
       />
     </div>
@@ -284,6 +303,10 @@ const LoadingScreen = ({ message = "Waiting for source..." }) => {
         justifyContent: "center",
         overflow: "hidden",
         borderRadius: "1px",
+        userSelect: "none",
+        WebkitUserSelect: "none",
+        MozUserSelect: "none",
+        msUserSelect: "none",
       }}
     >
       {/* Floating particles */}
@@ -310,6 +333,7 @@ const LoadingScreen = ({ message = "Waiting for source..." }) => {
             animation: `floatUp ${8 + Math.random() * 4}s linear infinite`,
             animationDelay: `${Math.random() * 8}s`,
             pointerEvents: "none",
+            userSelect: "none",
           }}
         />
       ))}
@@ -339,6 +363,11 @@ const LoadingScreen = ({ message = "Waiting for source..." }) => {
           animation: "fadeInOut 2s ease-in-out infinite",
           textShadow: "0 2px 4px rgba(36, 40, 59, 0.5)",
           fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+          userSelect: "none",
+          WebkitUserSelect: "none",
+          MozUserSelect: "none",
+          msUserSelect: "none",
+          pointerEvents: "none",
         }}
       >
         {message}
@@ -358,6 +387,7 @@ const LoadingScreen = ({ message = "Waiting for source..." }) => {
             radial-gradient(circle at 40% 40%, rgba(158, 206, 106, 0.02) 0%, transparent 50%)
           `,
           pointerEvents: "none",
+          userSelect: "none",
         }}
       />
     </div>
