@@ -1,6 +1,13 @@
 # MistPlayer React
+[![NPM](https://img.shields.io/npm/v/@stronk-tech/mistplayer-react.svg)](https://www.npmjs.com/package/@stronk-tech/mistplayer-react)
+[![NPM](https://img.shields.io/npm/last-update/@stronk-tech/mistplayer-react)](https://www.npmjs.com/package/@stronk-tech/mistplayer-react)
+[![NPM](https://img.shields.io/npm/dy/@stronk-tech/mistplayer-react)](https://www.npmjs.com/package/@stronk-tech/mistplayer-react)
+[![NPM](https://img.shields.io/bundlephobia/min/@stronk-tech/mistplayer-react)](https://www.npmjs.com/package/@stronk-tech/mistplayer-react)
+[![GitHub License](https://img.shields.io/github/license/Stronk-Tech/StronkPlayer)](https://github.com/Stronk-Tech/StronkPlayer/blob/master/LICENSE)
 
-A React component library for MistServer streaming with support for both MistPlayer and Canvas WebRTC players. The `Player` component automatically contacts the load balancer to find the best streaming host, while the raw components accept URIs directly.
+A React component library for streaming on the **Stronk Tech CDN** with automatic load balancing. Supports multiple player types including MistPlayer, Canvas WebRTC, and WHEP (WebRTC-HTTP Egress Protocol) players.
+
+The `Player` component automatically contacts the Stronk Tech load balancer to find the best streaming host, while the raw components accept URIs directly for custom implementations.
 
 ## Installation
 
@@ -15,12 +22,12 @@ npm install --save @stronk-tech/mistplayer-react
 Import the components you need:
 
 ```jsx
-import { Player, MistPlayer, CanvasPlayer } from '@stronk-tech/mistplayer-react';
+import { Player, MistPlayer, CanvasPlayer, WHEPPlayer } from '@stronk-tech/mistplayer-react';
 ```
 
 ### Player Component (Recommended)
 
-The `Player` component provides a clean interface that handles load balancing and renders either MistPlayer or CanvasPlayer based on the `playerType` prop:
+The `Player` component provides a clean interface that handles Stronk Tech CDN load balancing and renders the appropriate player based on the `playerType` prop:
 
 ```jsx
 import React from 'react';
@@ -40,7 +47,7 @@ You can specify which player to use and enable development mode:
 ```jsx
 <Player 
   streamName="your-stream-name" 
-  playerType="canvas" // 'mist' (default) or 'canvas'
+  playerType="whep" // 'whep', 'mist', or 'canvas'
   developmentMode={true} // enables 'dev' skin for MistPlayer
 />
 ```
@@ -87,31 +94,20 @@ function App() {
 }
 ```
 
-### Adding Your Own UI
+### Raw WHEPPlayer Component
 
-Since the components are raw players without UI chrome, you can easily add your own controls:
+Use WHEPPlayer directly for WHEP (WebRTC-HTTP Egress Protocol) streaming:
 
 ```jsx
-import React, { useState } from 'react';
-import { Player } from '@stronk-tech/mistplayer-react';
+import React from 'react';
+import { WHEPPlayer } from '@stronk-tech/mistplayer-react';
 
-function CustomPlayerWithControls() {
-  const [playerType, setPlayerType] = useState('mist');
+function App() {
+  const whepUrl = "https://your-mist-server.com/view/webrtc/your-stream-name";
   
   return (
     <div style={{ width: '100%', height: '500px' }}>
-      <div style={{ padding: '10px', background: '#f0f0f0' }}>
-        <button onClick={() => setPlayerType(playerType === 'mist' ? 'canvas' : 'mist')}>
-          Switch to {playerType === 'mist' ? 'Canvas' : 'Mist'} Player
-        </button>
-        <span style={{ marginLeft: '10px' }}>
-          Current: {playerType === 'mist' ? 'MistPlayer' : 'Canvas Player'}
-        </span>
-      </div>
-      <Player 
-        streamName="your-stream-name" 
-        playerType={playerType}
-      />
+      <WHEPPlayer whepUrl={whepUrl} />
     </div>
   );
 }
@@ -119,12 +115,12 @@ function CustomPlayerWithControls() {
 
 ## Component Props
 
-### Player (with Load Balancing)
+### Player (with Stronk Tech CDN Load Balancing)
 
 | Prop | Type | Required | Description |
 |------|------|----------|-------------|
 | `streamName` | string | Yes | Name of the stream to display |
-| `playerType` | 'mist' \| 'canvas' | No | Player type to use (defaults to 'mist') |
+| `playerType` | 'mist' \| 'canvas' \| 'whep' | No | Player type to use (defaults to 'mist') |
 | `developmentMode` | boolean | No | Whether to use development mode (affects MistPlayer skin, defaults to false) |
 
 ### MistPlayer (Raw Component)
@@ -141,20 +137,68 @@ function CustomPlayerWithControls() {
 |------|------|----------|-------------|
 | `webrtcUri` | string | Yes | WebSocket URI for WebRTC signaling (e.g., "wss://server.com/view/webrtc/streamName") |
 
+### WHEPPlayer (Raw Component)
+
+| Prop | Type | Required | Description |
+|------|------|----------|-------------|
+| `whepUrl` | string | Yes | WHEP endpoint URL (e.g., "https://server.com/view/webrtc/streamName") |
+| `autoPlay` | boolean | No | Whether to auto-play the stream (defaults to true) |
+| `onError` | function | No | Callback function for error events |
+| `onConnected` | function | No | Callback function when connection is established |
+| `onDisconnected` | function | No | Callback function when connection is lost |
+
+## Player Types
+
+### MistPlayer ⭐ **Recommended for Most Use Cases**
+- **Technology**: Intelligent wrapper that automatically selects optimal protocol + player combo
+- **Best for**: Universal compatibility with automatic optimization
+- **Pros**: Chooses best protocol (WebRTC, HLS, DASH, etc.) per device, handles adaptive bitrate, maximum compatibility, automatic fallbacks
+- **Cons**: Less direct control over specific playback technology
+
+### WHEPPlayer ⭐ **Recommended for Low Latency**
+- **Technology**: HTTP signaling + WebRTC (WHEP standard)
+- **Best for**: Universal compatibility with guaranteed low latency
+- **Pros**: Works on all devices, standardized protocol, no WebSocket needed, just HTTP requests, ultra-low latency
+- **Cons**: WebRTC limitations (CPU intensive, battery drain, network sensitivity), no adaptive bitrate
+
+### CanvasPlayer  
+- **Technology**: WebSocket signaling + WebRTC
+- **Best for**: Legacy low-latency streaming applications
+- **Pros**: Ultra-low latency when it works
+- **Cons**: Device compatibility issues, requires WebSocket connection, more complex signaling
+
 ## How It Works
 
-### Player Component (Load Balanced)
-The `Player` component automatically contacts the load balancer to find the best streaming host for your stream:
+### Player Component (Stronk Tech CDN Load Balanced)
+The `Player` component automatically contacts the Stronk Tech load balancer to find the best streaming host for your stream:
 
 - **MistPlayer**: Loads from `https://best-host/view/player.js` and plays `https://best-host/view/streamName.html`
 - **CanvasPlayer**: Connects to `wss://best-host/view/webrtc/streamName` for WebRTC streaming
+- **WHEPPlayer**: Connects to `https://best-host/view/webrtc/streamName` using WHEP protocol
 
-The component shows loading states while contacting the load balancer and error states if no suitable host is found.
+The `/view` path is a reverse proxy endpoint that routes to the appropriate MistServer HTTP services.
+
+The component shows loading states while contacting the load balancer and provides clear error messages:
+- "Finding best streaming server..." - while contacting load balancer
+- "Stream is currently offline" - when stream doesn't exist
+- "Connection error, retrying..." - on network issues
 
 ### Raw Components (Direct URIs)
-The raw `MistPlayer` and `CanvasPlayer` components accept URIs directly, giving you full control over which servers to use. This is useful when:
+The raw `MistPlayer`, `CanvasPlayer`, and `WHEPPlayer` components accept URIs directly, giving you full control over which servers to use. This is useful when:
 
 - You want to implement your own load balancing logic
 - You're connecting to a specific known server
 - You're building a custom player interface
-- You need to bypass the default load balancer
+- You need to bypass the Stronk Tech load balancer
+
+## Stronk Tech CDN
+
+This library is designed to work with the Stronk Tech Content Delivery Network, which provides:
+
+- **Global Edge Nodes**: Automatically find the closest streaming server
+- **Load Balancing**: Distribute viewers across multiple servers
+- **Stream Health Monitoring**: Detect offline streams and retry automatically
+- **Multiple Protocols**: Support for HLS, DASH, WebRTC, and WHEP
+- **Low Latency**: WebRTC and WHEP options for sub-second latency
+
+The load balancer automatically handles failover and finds the optimal streaming endpoint for each viewer's location and network conditions.
