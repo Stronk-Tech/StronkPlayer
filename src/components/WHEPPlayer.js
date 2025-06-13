@@ -3,6 +3,7 @@ import React, { useRef, useEffect, useState } from "react";
 const WHEPPlayer = ({
   whepUrl,
   autoPlay = true,
+  muted = true,
   onError = null,
   onConnected = null,
   onDisconnected = null
@@ -24,6 +25,13 @@ const WHEPPlayer = ({
     }
     setIsLoading(false);
   };
+
+  // Update video muted state when prop changes
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.muted = muted;
+    }
+  }, [muted]);
 
   const startWHEPPlayback = async (url) => {
     try {
@@ -116,6 +124,7 @@ const WHEPPlayer = ({
       <video
         ref={videoRef}
         autoPlay={autoPlay}
+        muted={muted}
         playsInline
         controls
         style={{

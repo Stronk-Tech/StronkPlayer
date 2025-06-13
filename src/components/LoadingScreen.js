@@ -80,7 +80,7 @@ const AnimatedBubble = ({ index }) => {
   );
 };
 
-const CenterLogo = ({ containerRef, scale = 0.2 }) => {
+const CenterLogo = ({ containerRef, scale = 0.2, onHitmarker }) => {
   const [logoSize, setLogoSize] = useState(100);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [isHovered, setIsHovered] = useState(false);
@@ -93,6 +93,16 @@ const CenterLogo = ({ containerRef, scale = 0.2 }) => {
       setLogoSize(minDimension * scale);
     }
   }, [containerRef, scale]);
+
+  const handleLogoClick = (e) => {
+    e.stopPropagation(); // Prevent event bubbling to container
+    if (onHitmarker) {
+      // Get the exact click position on the logo
+      const containerRect = containerRef.current.getBoundingClientRect();
+      
+      onHitmarker({ clientX: e.clientX, clientY: e.clientY });
+    }
+  };
 
   const handleMouseMove = (e) => {
     if (!containerRef.current) return;
@@ -182,10 +192,11 @@ const CenterLogo = ({ containerRef, scale = 0.2 }) => {
         }}
       />
 
-      {/* Logo */}
+      {/* Logo - only the SVG is clickable */}
       <img
         src="/mist.svg"
         alt="Mist Logo"
+        onClick={handleLogoClick}
         style={{
           width: `${logoSize}px`,
           height: `${logoSize}px`,
@@ -196,7 +207,7 @@ const CenterLogo = ({ containerRef, scale = 0.2 }) => {
             : "drop-shadow(0 4px 8px rgba(36, 40, 59, 0.3))",
           transform: isHovered ? "scale(1.1)" : "scale(1)",
           transition: "all 0.3s ease-out",
-          cursor: "pointer",
+          cursor: isHovered ? "pointer" : "default",
           userSelect: "none",
           WebkitUserSelect: "none",
           MozUserSelect: "none",
@@ -211,6 +222,120 @@ const CenterLogo = ({ containerRef, scale = 0.2 }) => {
 
 const LoadingScreen = ({ message = "Waiting for source..." }) => {
   const containerRef = useRef(null);
+  const [hitmarkers, setHitmarkers] = useState([]);
+
+  const playHitmarkerSound = () => {
+    try {
+      // Try to use a proper COD hitmarker sound file first
+      const audio = new Audio('/hitmarker.mp3');
+      audio.volume = 0.3;
+      audio.play().catch(() => {
+        // Fallback to synthetic sound if file doesn't exist
+        createSyntheticHitmarkerSound();
+      });
+    } catch (error) {
+      // Fallback to synthetic sound
+      createSyntheticHitmarkerSound();
+    }
+  };
+
+  const createSyntheticHitmarkerSound = () => {
+    try {
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      
+      // Create a more realistic hitmarker sound with noise and metallic ring
+      const oscillator1 = audioContext.createOscillator();
+      const oscillator2 = audioContext.createOscillator();
+      const noiseBuffer = audioContext.createBuffer(1, audioContext.sampleRate * 0.1, audioContext.sampleRate);
+      const noiseSource = audioContext.createBufferSource();
+      
+      // Generate white noise for the initial "crack"
+      const noiseData = noiseBuffer.getChannelData(0);
+      for (let i = 0; i < noiseData.length; i++) {
+        noiseData[i] = Math.random() * 2 - 1;
+      }
+      noiseSource.buffer = noiseBuffer;
+      
+      const gainNode1 = audioContext.createGain();
+      const gainNode2 = audioContext.createGain();
+      const noiseGain = audioContext.createGain();
+      const masterGain = audioContext.createGain();
+      
+      // Connect everything
+      oscillator1.connect(gainNode1);
+      oscillator2.connect(gainNode2);
+      noiseSource.connect(noiseGain);
+      
+      gainNode1.connect(masterGain);
+      gainNode2.connect(masterGain);
+      noiseGain.connect(masterGain);
+      masterGain.connect(audioContext.destination);
+      
+      // Sharp metallic frequencies
+      oscillator1.frequency.setValueAtTime(1800, audioContext.currentTime);
+      oscillator1.frequency.exponentialRampToValueAtTime(900, audioContext.currentTime + 0.08);
+      
+      oscillator2.frequency.setValueAtTime(3600, audioContext.currentTime);
+      oscillator2.frequency.exponentialRampToValueAtTime(1800, audioContext.currentTime + 0.04);
+      
+      oscillator1.type = 'triangle';
+      oscillator2.type = 'sine';
+      
+      // Sharp attack, quick decay
+      gainNode1.gain.setValueAtTime(0, audioContext.currentTime);
+      gainNode1.gain.linearRampToValueAtTime(0.4, audioContext.currentTime + 0.002);
+      gainNode1.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.12);
+      
+      gainNode2.gain.setValueAtTime(0, audioContext.currentTime);
+      gainNode2.gain.linearRampToValueAtTime(0.3, audioContext.currentTime + 0.001);
+      gainNode2.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.06);
+      
+      // Noise burst for the initial crack
+      noiseGain.gain.setValueAtTime(0, audioContext.currentTime);
+      noiseGain.gain.linearRampToValueAtTime(0.2, audioContext.currentTime + 0.001);
+      noiseGain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.01);
+      
+      masterGain.gain.setValueAtTime(0.5, audioContext.currentTime);
+      
+      const startTime = audioContext.currentTime;
+      const stopTime = startTime + 0.15;
+      
+      oscillator1.start(startTime);
+      oscillator2.start(startTime);
+      noiseSource.start(startTime);
+      
+      oscillator1.stop(stopTime);
+      oscillator2.stop(stopTime);
+      noiseSource.stop(startTime + 0.02);
+      
+    } catch (error) {
+      console.log('Audio context not available');
+    }
+  };
+
+  const createHitmarker = (e) => {
+    if (!containerRef.current) return;
+    
+    const rect = containerRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    const newHitmarker = {
+      id: Date.now() + Math.random(),
+      x,
+      y,
+    };
+    
+    setHitmarkers(prev => [...prev, newHitmarker]);
+    
+    // Play sound
+    playHitmarkerSound();
+    
+    // Remove hitmarker after animation
+    setTimeout(() => {
+      setHitmarkers(prev => prev.filter(h => h.id !== newHitmarker.id));
+    }, 600);
+  };
 
   // Inject CSS animations
   useEffect(() => {
@@ -273,6 +398,36 @@ const LoadingScreen = ({ message = "Waiting for source..." }) => {
             background-position: 100% 50%;
           }
         }
+
+        @keyframes hitmarkerFade45 {
+          0% {
+            opacity: 1;
+            transform: translate(-50%, -50%) rotate(45deg) scale(0.5);
+          }
+          20% {
+            opacity: 1;
+            transform: translate(-50%, -50%) rotate(45deg) scale(1.2);
+          }
+          100% {
+            opacity: 0;
+            transform: translate(-50%, -50%) rotate(45deg) scale(1);
+          }
+        }
+
+        @keyframes hitmarkerFadeNeg45 {
+          0% {
+            opacity: 1;
+            transform: translate(-50%, -50%) rotate(-45deg) scale(0.5);
+          }
+          20% {
+            opacity: 1;
+            transform: translate(-50%, -50%) rotate(-45deg) scale(1.2);
+          }
+          100% {
+            opacity: 0;
+            transform: translate(-50%, -50%) rotate(-45deg) scale(1);
+          }
+        }
       `;
       document.head.appendChild(style);
     }
@@ -309,6 +464,84 @@ const LoadingScreen = ({ message = "Waiting for source..." }) => {
         msUserSelect: "none",
       }}
     >
+      {/* Hitmarkers */}
+      {hitmarkers.map(hitmarker => (
+        <div
+          key={hitmarker.id}
+          style={{
+            position: "absolute",
+            left: `${hitmarker.x}px`,
+            top: `${hitmarker.y}px`,
+            transform: "translate(-50%, -50%)",
+            pointerEvents: "none",
+            zIndex: 100,
+            width: "40px",
+            height: "40px",
+          }}
+        >
+          {/* Top-left diagonal line */}
+          <div
+            style={{
+              position: "absolute",
+              top: "25%",
+              left: "25%",
+              width: "12px",
+              height: "3px",
+              backgroundColor: "#ffffff",
+              transform: "translate(-50%, -50%) rotate(45deg)",
+              animation: "hitmarkerFade 0.6s ease-out forwards",
+              boxShadow: "0 0 8px rgba(255, 255, 255, 0.8)",
+              borderRadius: "1px",
+            }}
+          />
+          {/* Top-right diagonal line */}
+          <div
+            style={{
+              position: "absolute",
+              top: "25%",
+              left: "75%",
+              width: "12px",
+              height: "3px",
+              backgroundColor: "#ffffff",
+              transform: "translate(-50%, -50%) rotate(-45deg)",
+              animation: "hitmarkerFade 0.6s ease-out forwards",
+              boxShadow: "0 0 8px rgba(255, 255, 255, 0.8)",
+              borderRadius: "1px",
+            }}
+          />
+          {/* Bottom-left diagonal line */}
+          <div
+            style={{
+              position: "absolute",
+              top: "75%",
+              left: "25%",
+              width: "12px",
+              height: "3px",
+              backgroundColor: "#ffffff",
+              transform: "translate(-50%, -50%) rotate(-45deg)",
+              animation: "hitmarkerFade 0.6s ease-out forwards",
+              boxShadow: "0 0 8px rgba(255, 255, 255, 0.8)",
+              borderRadius: "1px",
+            }}
+          />
+          {/* Bottom-right diagonal line */}
+          <div
+            style={{
+              position: "absolute",
+              top: "75%",
+              left: "75%",
+              width: "12px",
+              height: "3px",
+              backgroundColor: "#ffffff",
+              transform: "translate(-50%, -50%) rotate(45deg)",
+              animation: "hitmarkerFade 0.6s ease-out forwards",
+              boxShadow: "0 0 8px rgba(255, 255, 255, 0.8)",
+              borderRadius: "1px",
+            }}
+          />
+        </div>
+      ))}
+
       {/* Floating particles */}
       {[...Array(12)].map((_, index) => (
         <div
@@ -344,7 +577,7 @@ const LoadingScreen = ({ message = "Waiting for source..." }) => {
       ))}
 
       {/* Center logo */}
-      <CenterLogo containerRef={containerRef} />
+      <CenterLogo containerRef={containerRef} onHitmarker={createHitmarker} />
 
       {/* Bouncing DVD Logo */}
       <DvdLogo parentRef={containerRef} scale={0.08} />

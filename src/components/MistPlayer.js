@@ -6,7 +6,7 @@ import React, { useEffect } from 'react';
  * A React component that embeds the MistServer player for streaming video content.
  * Accepts pre-resolved URIs from the parent Player component.
  */
-const MistPlayer = ({ baseUri, streamName, developmentMode = false }) => {
+const MistPlayer = ({ baseUri, streamName, developmentMode = false, muted = true, poster = null }) => {
   // Embed as an iframe on localhost/HTTP
   const useIFrame = window.location.protocol === 'http:';
   const htmlUri = baseUri + encodeURIComponent(streamName) + ".html?dev=1";
@@ -23,7 +23,7 @@ const MistPlayer = ({ baseUri, streamName, developmentMode = false }) => {
       // Try to start it on the non-transcoded track and using WebRTC
       window.mistPlay?.(streamName, {
         target: document.getElementById('mistplayer'),
-        poster: '/android-chrome-512x512.png',
+        poster: poster || '/android-chrome-512x512.png',
         autoplay: true,
         ABR_resize: false,
         forcePriority: {
@@ -43,7 +43,7 @@ const MistPlayer = ({ baseUri, streamName, developmentMode = false }) => {
         loop: false,
         controls: true,
         fillSpace: true,
-        muted: true,
+        muted: muted,
         skin: developmentMode ? 'dev' : 'default',
       });
     }
@@ -58,7 +58,7 @@ const MistPlayer = ({ baseUri, streamName, developmentMode = false }) => {
     } else {
       playStream();
     }
-  }, [streamName, playerUri, useIFrame, developmentMode]);
+  }, [streamName, playerUri, useIFrame, developmentMode, muted, poster]);
 
   if (useIFrame) {
     const iframeElement = (

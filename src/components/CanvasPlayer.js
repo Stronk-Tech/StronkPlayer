@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import useWebRTCPlayer from '../hooks/useWebRTCPlayer';
 
 /**
@@ -7,13 +7,20 @@ import useWebRTCPlayer from '../hooks/useWebRTCPlayer';
  * A React component that uses WebRTC to stream video content to an HTML5 video element.
  * Accepts pre-resolved WebRTC URI from the parent Player component.
  */
-const CanvasPlayer = ({ webrtcUri }) => {
+const CanvasPlayer = ({ webrtcUri, muted = true }) => {
   const canvasRef = useRef(null);
   useWebRTCPlayer({
     canvasRef,
     streamBitrate: 1000000,
     uri: webrtcUri,
   });
+
+  // Update video muted state when prop changes
+  useEffect(() => {
+    if (canvasRef.current) {
+      canvasRef.current.muted = muted;
+    }
+  }, [muted]);
 
   return (
     <video
@@ -23,7 +30,7 @@ const CanvasPlayer = ({ webrtcUri }) => {
         height: '100%' 
       }}
       autoPlay
-      muted
+      muted={muted}
       controls
       playsInline
       ref={canvasRef}

@@ -103,7 +103,13 @@ const useWebRTCPlayer = (props) => {
 
     // Go go gadget autoplay
     var onVideoLoaded = () => {
-      props.canvasRef.current.play();
+      const playPromise = props.canvasRef.current.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(error => {
+          // Auto-play was prevented, this is expected for unmuted videos without user interaction
+          console.log("Autoplay prevented:", error.message);
+        });
+      }
     };
     props.canvasRef.current.autoplay = true;
     props.canvasRef.current.addEventListener("loadeddata", onVideoLoaded);

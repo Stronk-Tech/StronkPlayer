@@ -52,6 +52,50 @@ You can specify which player to use and enable development mode:
 />
 ```
 
+### Thumbnail Support
+
+The `Player` component supports thumbnail images for all player types:
+
+#### MistPlayer Poster Override
+For MistPlayer, the `thumbnailUrl` overrides the default poster image:
+
+```jsx
+<Player 
+  streamName="your-stream-name" 
+  playerType="mist"
+  thumbnailUrl="https://example.com/thumbnail.jpg"
+/>
+```
+
+#### Canvas/WHEP Player Overlays
+For Canvas and WHEP players, you can use interactive thumbnail overlays:
+
+##### Click-to-Play Mode
+Shows a thumbnail image with a play button until the user clicks to start:
+
+```jsx
+<Player 
+  streamName="your-stream-name" 
+  playerType="canvas" // or "whep"
+  thumbnailUrl="https://example.com/thumbnail.jpg"
+  clickToPlay={true}
+/>
+```
+
+##### Autoplay Muted Mode
+Starts playing muted with a "Click to unmute" overlay:
+
+```jsx
+<Player 
+  streamName="your-stream-name" 
+  playerType="canvas" // or "whep"
+  thumbnailUrl="https://example.com/thumbnail.jpg"
+  autoplayMuted={true}
+/>
+```
+
+**Note:** MistPlayer uses `thumbnailUrl` as a poster image override, while Canvas and WHEP players support interactive thumbnail overlays with click-to-play and autoplay-muted functionality.
+
 ### Raw MistPlayer Component
 
 Use MistPlayer directly when you want to provide your own URIs (bypassing load balancer):
@@ -122,6 +166,9 @@ function App() {
 | `streamName` | string | Yes | Name of the stream to display |
 | `playerType` | 'mist' \| 'canvas' \| 'whep' | No | Player type to use (defaults to 'mist') |
 | `developmentMode` | boolean | No | Whether to use development mode (affects MistPlayer skin, defaults to false) |
+| `thumbnailUrl` | string | No | URL to thumbnail image (all player types: MistPlayer uses as poster, Canvas/WHEP use for overlays) |
+| `clickToPlay` | boolean | No | Show thumbnail until user clicks to play (Canvas/WHEP only) |
+| `autoplayMuted` | boolean | No | Start playing muted with "click to unmute" overlay (Canvas/WHEP only) |
 
 ### MistPlayer (Raw Component)
 
@@ -130,12 +177,14 @@ function App() {
 | `baseUri` | string | Yes | Base URI for MistServer (e.g., "https://server.com/view/") |
 | `streamName` | string | Yes | Name of the stream to display |
 | `developmentMode` | boolean | No | Whether to use development mode ('dev' skin, defaults to false) |
+| `poster` | string | No | URL to poster/thumbnail image (overrides default poster) |
 
 ### CanvasPlayer (Raw Component)
 
 | Prop | Type | Required | Description |
 |------|------|----------|-------------|
 | `webrtcUri` | string | Yes | WebSocket URI for WebRTC signaling (e.g., "wss://server.com/view/webrtc/streamName") |
+| `muted` | boolean | No | Whether to start muted (defaults to true) |
 
 ### WHEPPlayer (Raw Component)
 
@@ -143,6 +192,7 @@ function App() {
 |------|------|----------|-------------|
 | `whepUrl` | string | Yes | WHEP endpoint URL (e.g., "https://server.com/view/webrtc/streamName") |
 | `autoPlay` | boolean | No | Whether to auto-play the stream (defaults to true) |
+| `muted` | boolean | No | Whether to start muted (defaults to true) |
 | `onError` | function | No | Callback function for error events |
 | `onConnected` | function | No | Callback function when connection is established |
 | `onDisconnected` | function | No | Callback function when connection is lost |
